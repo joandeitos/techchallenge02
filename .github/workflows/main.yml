@@ -43,7 +43,7 @@ jobs:
     # Construir as imagens Docker
     - name: Construir as imagens Docker
       run: |
-        docker-compose -f docker-compose.yml build
+        docker-compose -f docker-compose.yml build  # Isso irá construir as imagens definidas no docker-compose.yml
     
     # Rodar os testes com Docker
     - name: Rodar os testes com Docker
@@ -52,14 +52,14 @@ jobs:
         docker-compose -f docker-compose.yml exec api npm test  # Executar testes dentro do container 'api'
         docker-compose -f docker-compose.yml down  # Parar os containers
     
-    # Deploy no Docker Hub
+    # Deploy no Docker Hub com uma tag personalizada
     - name: Deploy no Docker Hub
       run: |
         echo "Realizando deploy para o Docker Hub..."
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        # Tag da imagem para Docker Hub
-        docker tag blog-api ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
+        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        # Tag da imagem com a tag personalizada (substitua 'tagname' com a tag desejada, ex: 'v1.0')
+        docker tag blog-api:latest ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}  # Usando o hash do commit como tag
         # Enviar a imagem para o Docker Hub
-        docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usando a secret do MongoDB URI
