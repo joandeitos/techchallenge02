@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - Silton
   pull_request:
     branches:
       - main
@@ -59,8 +59,8 @@ jobs:
         echo "Realizando deploy para o Docker Hub..."
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
         # Tag da imagem com o hash do commit (ou uma tag personalizada)
-        docker tag blog-api:latest ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}  # Usando o hash do commit como tag
+        docker tag techchallenge02-api:latest ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}  # Usando o hash do commit como tag
         # Enviar a imagem para o Docker Hub
-        docker push ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}
+        docker push ${{ secrets.DOCKER_USERNAME }}/grupo23/blog-professores:${{ github.sha }}
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usando a secret do MongoDB URI
