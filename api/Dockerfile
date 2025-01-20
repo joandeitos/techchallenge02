@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18 #-alpine deu erro no ci/cd
 
 # Criar diretório da aplicação
 WORKDIR /usr/src/app
