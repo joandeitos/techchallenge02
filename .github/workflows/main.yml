@@ -13,10 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Passo 1: Checkout do código do repositório
     - name: Checar o código do repositório
       uses: actions/checkout@v3
 
-    # Instalar Docker e Docker Compose
+    # Passo 2: Instalar o Docker e Docker Compose
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
 
@@ -28,36 +29,36 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version  # Verifica se o docker-compose foi instalado corretamente
     
-    # Instalar dependências do backend
+    # Passo 3: Instalar dependências do backend
     - name: Instalar dependências do backend
       run: |
-        cd api  # Entrar no diretório 'api' se o package.json está lá
+        cd api  # Entrar no diretório 'api' onde o package.json está
         npm install
     
-    # Instalar dependências do frontend (se necessário)
+    # Passo 4: Instalar dependências do frontend (se necessário)
     - name: Instalar dependências do frontend
       run: |
-        cd blog-frontend  # Entrar no diretório 'blog-frontend' se necessário
+        cd blog-frontend  # Entrar no diretório 'blog-frontend', se necessário
         npm install
 
-    # Construir as imagens Docker
+    # Passo 5: Construir as imagens Docker
     - name: Construir as imagens Docker
       run: |
-        docker-compose -f docker-compose.yml build  # Isso irá construir as imagens definidas no docker-compose.yml
+        docker-compose -f docker-compose.yml build  # Construir imagens definidas no docker-compose.yml
     
-    # Rodar os testes com Docker
+    # Passo 6: Rodar os testes com Docker
     - name: Rodar os testes com Docker
       run: |
         docker-compose -f docker-compose.yml up -d
         docker-compose -f docker-compose.yml exec api npm test  # Executar testes dentro do container 'api'
         docker-compose -f docker-compose.yml down  # Parar os containers
     
-    # Deploy no Docker Hub com uma tag personalizada
-    - name: Deploy no Docker Hub
+    # Passo 7: Realizar deploy para o Docker Hub
+    - name: Realizar deploy para o Docker Hub
       run: |
         echo "Realizando deploy para o Docker Hub..."
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        # Tag da imagem com a tag personalizada (substitua 'tagname' com a tag desejada, ex: 'v1.0')
+        # Tag da imagem com o hash do commit (ou uma tag personalizada)
         docker tag blog-api:latest ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}  # Usando o hash do commit como tag
         # Enviar a imagem para o Docker Hub
         docker push ${{ secrets.DOCKER_USERNAME }}/blog-professores:${{ github.sha }}
