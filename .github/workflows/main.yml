@@ -29,10 +29,11 @@ jobs:
         docker-compose --version  # Verifica se o docker-compose foi instalado corretamente
     
     # Instalar dependências do backend
-    - name: Instalar dependências do backend
+    - name: Instalar dependências do backend e testar
       run: |
         cd api  # Entrar no diretório 'api' se o package.json está lá
         npm install
+        npm test
     
     # Instalar dependências do frontend (se necessário)
     - name: Instalar dependências do frontend
@@ -44,13 +45,6 @@ jobs:
     - name: Construir as imagens Docker
       run: |
         docker-compose -f docker-compose.yml build
-    
-    # Rodar os testes com Docker
-    - name: Rodar os testes com Docker
-      run: |
-        docker-compose -f docker-compose.yml up -d
-        docker-compose -f docker-compose.yml exec api npm test  # Executar testes dentro do container 'api'
-        docker-compose -f docker-compose.yml down  # Parar os containers
     
     # Deploy no Docker Hub
     - name: Deploy no Docker Hub
