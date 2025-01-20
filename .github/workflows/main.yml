@@ -45,11 +45,11 @@ jobs:
     - name: Construir as imagens Docker
       run: |
         docker-compose -f docker-compose.yml build
-    
+
     # Deploy no Docker Hub
     - name: Deploy no Docker Hub
       run: |
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker build -t $DOCKER_USERNAME/techchallenge02-api:latest
-        docker push $DOCKER_USERNAME/blog-professores:latest
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-professores:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/blog-professores:latest
 
