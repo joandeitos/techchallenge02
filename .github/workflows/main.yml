@@ -51,5 +51,3 @@ jobs:
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-api:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
-         env:
-      MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usando a secret do MongoDB URI
