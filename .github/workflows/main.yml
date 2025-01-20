@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu
+    runs-on: ubuntu-lasted
 
     steps:
     - name: Checar o código do repositório
