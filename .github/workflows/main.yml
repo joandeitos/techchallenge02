@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - Silton
   pull_request:
     branches:
       - main
@@ -58,8 +58,8 @@ jobs:
         echo "Realizando deploy para o Docker Hub..."
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         # Tag da imagem para Docker Hub
-        docker tag blog-api ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
+        docker tag techchallenge02-api ${{ secrets.DOCKER_USERNAME }}/techchallenge02-api:latest
         # Enviar a imagem para o Docker Hub
-        docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}//blog-professores:latest
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}  # Usando a secret do MongoDB URI
