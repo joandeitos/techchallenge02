@@ -1,7 +1,7 @@
 # Blog Acadêmico
 
 ## 📝 Descrição
-API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite que professores da rede pública compartilhem conteúdo educacional. O sistema oferece gerenciamento completo de posts e usuários, com suporte a múltiplas disciplinas.
+API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite que professores da rede pública compartilhem conteúdo educacional. O sistema oferece gerenciamento completo de posts e usuários, com suporte a múltiplas disciplinas. Segue a arquitetura MVC (Model-View-Controller) para organizar a aplicação de forma modular e escalável.
 
 ## 🛠 Tecnologias
 - Node.js
