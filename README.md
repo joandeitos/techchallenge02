@@ -34,6 +34,17 @@ docker-compose up --build
 
 A API estará disponível em `http://localhost:3000`
 
+
+## 🔄 Dados Iniciais
+Para carregar dados de teste, use o endpoint de seed:
+```bash
+curl -X POST http://localhost:3000/api/seed
+```
+
+Isso criará:
+- 5 usuários professores
+- 12 posts distribuídos entre os professores
+
 ### Swagger
 A documentação interativa da API (Swagger) estará disponível em: http://localhost:3000/api-docs
 
@@ -242,16 +253,6 @@ Códigos de status HTTP:
 - 400: Erro de validação
 - 404: Recurso não encontrado
 - 500: Erro interno do servidor
-
-## 🔄 Dados Iniciais
-Para carregar dados de teste, use o endpoint de seed:
-```bash
-curl -X POST http://localhost:3000/api/seed
-```
-
-Isso criará:
-- 5 usuários professores
-- 12 posts distribuídos entre os professores
 
 ### Desafios Enfrentados
 
