@@ -9,6 +9,8 @@ API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite
 - MongoDB
 - Docker
 - TypeScript
+- Swagger
+- Jest
 
 ## 🚀 Configuração do Projeto
 
@@ -16,6 +18,7 @@ API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite
 - Docker
 - Docker Compose
 - Node.js (para desenvolvimento)
+- Git – Para clonar o repositório
 
 ### Instalação
 
@@ -30,6 +33,13 @@ docker-compose up --build
 ```
 
 A API estará disponível em `http://localhost:3000`
+
+### Swagger
+A documentação interativa da API (Swagger) estará disponível em: http://localhost:3000/api-docs
+
+### Automação com GitHub Actions:
+
+Configuração de workflows de CI/CD para automação de testes e deploy, dispível nas Actions do repositório.
 
 ## 📚 Estrutura do Banco de Dados
 
@@ -214,7 +224,10 @@ Busca posts por termo.
 ```bash
 curl "http://localhost:3000/api/posts/search?q=matemática"
 ```
+### Camada de Testes:
 
+Utilizamos o Jest para realizar testes unitários e de integração, garantindo que a API funcione corretamente.
+    
 ## ⚠️ Tratamento de Erros
 A API retorna erros no seguinte formato:
 ```javascript
@@ -239,6 +252,10 @@ curl -X POST http://localhost:3000/api/seed
 Isso criará:
 - 5 usuários professores
 - 12 posts distribuídos entre os professores
+
+### Desafios Enfrentados
+
+Iniciar a trabalhar com nodejs, express, swagger, jest, mongodb, git, github actions, docker foi desafiante para o grupo, por ser a primeira experiência de muitos de nós.
 
 ## 📜 Licença
 Este projeto está sob a licença MIT.
