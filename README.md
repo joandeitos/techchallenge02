@@ -4,7 +4,7 @@
 API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite que professores da rede pública compartilhem conteúdo educacional. O sistema oferece gerenciamento completo de posts e usuários, com suporte a múltiplas disciplinas. Segue a arquitetura MVC (Model-View-Controller) para organizar a aplicação de forma modular e escalável.
 
 ## 📹 Vídeo de apresentação do projeto
-[Ver o vídeo](https://youtu.be/ii0Q6pSagII)
+[Ver o vídeo](https://youtu.be/ii0Q6pSagII)  (YouTube)
 
 ## 🛠 Tecnologias
 - Node.js
