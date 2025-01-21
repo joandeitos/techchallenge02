@@ -24,7 +24,7 @@ API RESTful desenvolvida para o Blog dos Professores, uma plataforma que permite
 
 1. Clone o repositório
 ```bash
-git clone [URL_DO_REPOSITÓRIO]
+git clone https://github.com/joandeitos/techchallenge02
 ```
 
 2. Inicie os containers
