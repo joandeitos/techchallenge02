@@ -6,20 +6,19 @@ import {
   Card,
   CardContent,
   Grid,
-  Button,
-  CardActions,
-  TextField,
+  IconButton,
   Box,
   useTheme,
   useMediaQuery,
-  IconButton,
   Tooltip,
   Divider,
   styled,
+  TextField,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
+import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 
@@ -35,6 +34,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const StyledCardContent = styled(CardContent)({
   flexGrow: 1,
+  paddingBottom: '16px !important',
 });
 
 const PostContent = styled('div')(({ theme }) => ({
@@ -74,6 +74,14 @@ const PostContent = styled('div')(({ theme }) => ({
     fontSize: '0.9em',
     color: theme.palette.text.primary,
   },
+}));
+
+const ActionButtons = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  right: theme.spacing(2),
+  top: theme.spacing(2),
+  display: 'flex',
+  gap: theme.spacing(1),
 }));
 
 interface Author {
@@ -129,8 +137,9 @@ const PostList: React.FC = () => {
     fetchPosts();
   }, []);
 
-  const handleEdit = (postId: string) => {
-    navigate(`/edit-post/${postId}`);
+  const handleEdit = (postId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    navigate(`/posts/edit/${postId}`);
   };
 
   const handleViewPost = (postId: string) => {
@@ -199,23 +208,36 @@ const PostList: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             {posts.map((post) => (
-              <StyledCard key={post._id}>
+              <StyledCard 
+                key={post._id} 
+                onClick={() => handleViewPost(post._id)}
+                sx={{ 
+                  position: 'relative',
+                  cursor: 'pointer',
+                }}
+              >
                 <StyledCardContent>
-                  <Box 
-                    onClick={() => handleViewPost(post._id)}
-                    sx={{ 
-                      cursor: 'pointer',
-                      transition: 'color 0.2s ease-in-out',
-                      '&:hover': {
-                        color: theme.palette.primary.main
-                      }
-                    }}
-                  >
-                    <Typography variant={isMobile ? "h6" : "h5"} component="h2" gutterBottom>
+                  <Box>
+                    <Typography 
+                      variant={isMobile ? "h6" : "h5"} 
+                      component="h2" 
+                      gutterBottom
+                      sx={{
+                        pr: 15, // Espaço para os botões
+                        transition: 'color 0.2s ease-in-out',
+                        '&:hover': {
+                          color: theme.palette.primary.main
+                        }
+                      }}
+                    >
                       {post.title}
                     </Typography>
                   </Box>
-                  <Typography sx={{ mb: 2 }} color="text.secondary" variant={isMobile ? "body2" : "body1"}>
+                  <Typography 
+                    sx={{ mb: 2 }} 
+                    color="text.secondary" 
+                    variant={isMobile ? "body2" : "body1"}
+                  >
                     Por {post.author.name || post.author.email} em{' '}
                     {new Date(post.createdAt).toLocaleDateString('pt-BR')}
                   </Typography>
@@ -227,19 +249,40 @@ const PostList: React.FC = () => {
                         : post.content
                     )}
                   />
+                  <ActionButtons>
+                    <Tooltip title="Ler mais">
+                      <IconButton 
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewPost(post._id);
+                        }}
+                        sx={{
+                          color: theme.palette.primary.main,
+                          '&:hover': {
+                            backgroundColor: theme.palette.primary.main + '20',
+                          }
+                        }}
+                      >
+                        <ReadMoreIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Editar">
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleEdit(post._id, e)}
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          '&:hover': {
+                            backgroundColor: theme.palette.secondary.main + '20',
+                          }
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </ActionButtons>
                 </StyledCardContent>
-                <CardActions>
-                  <Button size="small" onClick={() => handleViewPost(post._id)}>
-                    Ler mais
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<EditIcon />}
-                    onClick={() => handleEdit(post._id)}
-                  >
-                    Editar
-                  </Button>
-                </CardActions>
               </StyledCard>
             ))}
           </Grid>

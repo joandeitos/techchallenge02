@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -9,89 +9,62 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Link,
 } from '@mui/material';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useAuth } from '../contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
-import axios from 'axios';
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'professor' | 'aluno';
-}
-
-const Header: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+export default function Header() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const response = await axios.get<User>('/api/auth/me', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUser(response.data);
-        } catch (error) {
-          console.error('Erro ao carregar usuário:', error);
-        }
-      }
-    };
-
-    fetchUser();
-  }, [token]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    navigate('/login');
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
+  const handleClose = () => {
     setAnchorEl(null);
   };
 
-  const handleProfileClick = () => {
-    handleMenuClose();
+  const handleLogout = () => {
+    logout();
+    handleClose();
+    navigate('/login');
+  };
+
+  const handleProfile = () => {
+    handleClose();
     navigate('/profile');
   };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography
-          variant="h6"
-          component={RouterLink}
-          to="/"
-          sx={{
-            flexGrow: 1,
-            textDecoration: 'none',
-            color: 'inherit',
-          }}
-        >
-          Blog dos Professores
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Link
+            component={RouterLink}
+            to="/"
+            color="inherit"
+            underline="none"
+          >
+            Blog dos Professores
+          </Link>
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ThemeToggle />
           {user ? (
             <>
-              {(user.role === 'admin' || user.role === 'professor') && (
+              {(user.role === 'professor' || user.role === 'admin') && (
                 <Button
                   color="inherit"
                   component={RouterLink}
-                  to="/create-post"
+                  to="/dashboard"
+                  sx={{ mr: 2 }}
                 >
-                  Novo Post
+                  Dashboard
                 </Button>
               )}
               {user.role === 'admin' && (
@@ -99,39 +72,61 @@ const Header: React.FC = () => {
                   color="inherit"
                   component={RouterLink}
                   to="/admin"
+                  sx={{ mr: 2 }}
                 >
-                  Painel Admin
+                  Admin
                 </Button>
               )}
               <IconButton
+                size="large"
+                aria-label="conta do usuário"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
                 color="inherit"
-                onClick={handleMenuOpen}
-                sx={{ ml: 1 }}
               >
-                <AccountCircleIcon />
+                <AccountCircle />
               </IconButton>
               <Menu
+                id="menu-appbar"
                 anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
                 open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
+                onClose={handleClose}
               >
-                <MenuItem onClick={handleProfileClick}>Meu Perfil</MenuItem>
+                <MenuItem onClick={handleProfile}>Meu Perfil</MenuItem>
                 <MenuItem onClick={handleLogout}>Sair</MenuItem>
               </Menu>
             </>
           ) : (
-            <Button
-              color="inherit"
-              component={RouterLink}
-              to="/login"
-            >
-              Login
-            </Button>
+            <>
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/login"
+                sx={{ mr: 1 }}
+              >
+                Login
+              </Button>
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/register"
+              >
+                Registrar
+              </Button>
+            </>
           )}
         </Box>
       </Toolbar>
     </AppBar>
   );
-};
-
-export default Header; 
+} 

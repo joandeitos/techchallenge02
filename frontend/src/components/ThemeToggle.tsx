@@ -4,7 +4,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useTheme } from '../theme/ThemeContext';
 
-export const ThemeToggle: React.FC = () => {
+export function ThemeToggle() {
   const { isDarkMode, toggleTheme } = useTheme();
 
   return (
@@ -14,4 +14,4 @@ export const ThemeToggle: React.FC = () => {
       </IconButton>
     </Tooltip>
   );
-}; 
+} 

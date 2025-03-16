@@ -21,6 +21,8 @@ import {
   TextField,
   TableSortLabel,
   InputAdornment,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Search as SearchIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -99,6 +101,10 @@ const AdminPanel: React.FC = () => {
   const [userOrderBy, setUserOrderBy] = useState<string>('name');
   const [postSearch, setPostSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -123,6 +129,9 @@ const AdminPanel: React.FC = () => {
       setUsers(response.data);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
+      setError('Erro ao carregar a lista de usuários. Por favor, tente novamente.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -308,6 +317,16 @@ const AdminPanel: React.FC = () => {
 
   const sortedAndFilteredPosts = React.useMemo(() => filterAndSortPosts(posts), [posts, postOrder, postOrderBy, postSearch]);
   const sortedAndFilteredUsers = React.useMemo(() => filterAndSortUsers(users), [users, userOrder, userOrderBy, userSearch]);
+
+  if (loading) {
+    return (
+      <Container>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -588,6 +607,12 @@ const AdminPanel: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
     </Container>
   );
 };

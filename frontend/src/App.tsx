@@ -11,6 +11,12 @@ import Profile from './components/Profile';
 import AdminRoute from './components/AdminRoute';
 import { ThemeProvider } from './theme/ThemeContext';
 import axios from 'axios';
+import { AuthProvider } from './contexts/AuthContext';
+import { PrivateRoute } from './components/PrivateRoute';
+import Register from './pages/Register';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import PostEditor from './pages/PostEditor';
 
 const App: React.FC = () => {
   const token = localStorage.getItem('token');
@@ -40,76 +46,63 @@ const App: React.FC = () => {
     }
   );
 
-  const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return token ? <>{children}</> : <Navigate to="/login" />;
-  };
-
-  const TeacherRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isAllowed, setIsAllowed] = React.useState<boolean | null>(null);
-
-    React.useEffect(() => {
-      const checkPermission = async () => {
-        try {
-          const response = await axios.get<{ role: string }>('/api/auth/me');
-          setIsAllowed(response.data.role === 'admin' || response.data.role === 'professor');
-        } catch (error) {
-          setIsAllowed(false);
-        }
-      };
-
-      checkPermission();
-    }, []);
-
-    if (isAllowed === null) {
-      return <div>Carregando...</div>;
-    }
-
-    return isAllowed ? <>{children}</> : <Navigate to="/" />;
-  };
-
   return (
-    <ThemeProvider>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<PostList />} />
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/create-post"
-            element={
-              <TeacherRoute>
-                <NewPost />
-              </TeacherRoute>
-            }
-          />
-          <Route
-            path="/edit-post/:id"
-            element={
-              <TeacherRoute>
-                <EditPost />
-              </TeacherRoute>
-            }
-          />
-          <Route path="/post/:id" element={<ViewPost />} />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <Router>
+          <Header />
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* Rotas protegidas */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/posts/new"
+              element={
+                <PrivateRoute requiredRole="professor">
+                  <PostEditor />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/posts/edit/:id"
+              element={
+                <PrivateRoute requiredRole="professor">
+                  <PostEditor />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/post/:id" element={<ViewPost />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminPanel />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </AuthProvider>
   );
 };
 

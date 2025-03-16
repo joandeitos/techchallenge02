@@ -1,15 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
-  Paper,
+  Box,
   Typography,
   TextField,
   Button,
-  Box,
+  Paper,
   Alert,
-  Divider,
+  Grid,
 } from '@mui/material';
+import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+
+interface ProfileData {
+  name: string;
+  email: string;
+  discipline?: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+}
 
 interface User {
   _id: string;
@@ -19,232 +29,180 @@ interface User {
   discipline?: string;
 }
 
-const Profile: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [name, setName] = useState('');
-  const [discipline, setDiscipline] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
+export default function Profile() {
+  const { user, updateUser } = useAuth();
+  const [formData, setFormData] = useState<ProfileData>({
+    name: user?.name || '',
+    email: user?.email || '',
+    discipline: user?.discipline || '',
+  });
   const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const token = localStorage.getItem('token');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get<User>('/api/auth/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUser(response.data);
-        setName(response.data.name);
-        setDiscipline(response.data.discipline || '');
-      } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
-        setError('Erro ao carregar perfil do usuário');
-      }
-    };
-
-    fetchUserProfile();
-  }, [token]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
     try {
-      const response = await axios.put<User>(
-        '/api/users/profile',
-        {
-          name,
-          ...(user?.role === 'professor' ? { discipline } : {}),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const updateData: Partial<ProfileData> = {
+        name: formData.name,
+        email: formData.email,
+      };
+
+      if (user?.role === 'professor') {
+        updateData.discipline = formData.discipline;
+      }
+
+      if (formData.currentPassword && formData.newPassword) {
+        if (formData.newPassword !== formData.confirmPassword) {
+          setError('As senhas não coincidem');
+          setLoading(false);
+          return;
         }
-      );
-      setUser(response.data);
-      setMessage('Perfil atualizado com sucesso!');
-      setTimeout(() => setMessage(''), 3000);
+        updateData.currentPassword = formData.currentPassword;
+        updateData.newPassword = formData.newPassword;
+      }
+
+      const response = await axios.put<User>(`/api/users/${user?._id}`, updateData);
+      updateUser(response.data);
+      setSuccess('Perfil atualizado com sucesso!');
+      
+      // Limpa os campos de senha
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }));
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
-      setError('Erro ao atualizar perfil');
-      setTimeout(() => setError(''), 3000);
+      setError('Erro ao atualizar o perfil. Por favor, tente novamente.');
+    } finally {
+      setLoading(false);
     }
   };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError('');
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('As senhas não coincidem');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('A nova senha deve ter pelo menos 6 caracteres');
-      return;
-    }
-
-    try {
-      await axios.put(
-        '/api/users/change-password',
-        {
-          currentPassword,
-          newPassword,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setMessage('Senha atualizada com sucesso!');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error: any) {
-      console.error('Erro ao atualizar senha:', error);
-      setPasswordError(
-        error.response?.data?.message || 'Erro ao atualizar senha'
-      );
-    }
-  };
-
-  if (!user) {
-    return (
-      <Container maxWidth="sm">
-        <Typography>Carregando...</Typography>
-      </Container>
-    );
-  }
 
   return (
-    <Container maxWidth="sm">
-      <Paper sx={{ p: 4, mt: 4 }}>
+    <Container maxWidth="md">
+      <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Meu Perfil
         </Typography>
 
-        {message && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {message}
-          </Alert>
-        )}
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Email"
-            value={user.email}
-            disabled
-          />
-          
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Nome"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          {user.role === 'professor' && (
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Disciplina"
-              value={discipline}
-              onChange={(e) => setDiscipline(e.target.value)}
-            />
+        <Paper sx={{ p: 3 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
           )}
 
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Função"
-            value={user.role === 'admin' ? 'Administrador' : user.role === 'professor' ? 'Professor' : 'Aluno'}
-            disabled
-          />
+          <Box component="form" onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Nome"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3 }}
-          >
-            Salvar Alterações
-          </Button>
-        </Box>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
 
-        <Divider sx={{ my: 4 }} />
+              {user?.role === 'professor' && (
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Disciplina"
+                    name="discipline"
+                    value={formData.discipline}
+                    onChange={handleChange}
+                    required
+                  />
+                </Grid>
+              )}
 
-        <Typography variant="h5" component="h2" gutterBottom>
-          Alterar Senha
-        </Typography>
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                  Alterar Senha
+                </Typography>
+              </Grid>
 
-        {passwordError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {passwordError}
-          </Alert>
-        )}
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Senha Atual"
+                  name="currentPassword"
+                  type="password"
+                  value={formData.currentPassword || ''}
+                  onChange={handleChange}
+                />
+              </Grid>
 
-        <Box component="form" onSubmit={handlePasswordChange}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Senha Atual"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Nova Senha"
+                  name="newPassword"
+                  type="password"
+                  value={formData.newPassword || ''}
+                  onChange={handleChange}
+                />
+              </Grid>
 
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Nova Senha"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Confirmar Nova Senha"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword || ''}
+                  onChange={handleChange}
+                />
+              </Grid>
 
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Confirmar Nova Senha"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="secondary"
-            sx={{ mt: 3 }}
-          >
-            Alterar Senha
-          </Button>
-        </Box>
-      </Paper>
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                  sx={{ mt: 2 }}
+                >
+                  {loading ? 'Salvando...' : 'Salvar Alterações'}
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Box>
     </Container>
   );
-};
-
-export default Profile; 
+} 
