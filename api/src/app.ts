@@ -1,0 +1,76 @@
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import logger from './config/logger';
+import postRoutes from './routes/posts';
+import authRoutes from './routes/auth';
+import seedRoutes from './routes/seed';
+import userRoutes from './routes/users';
+import path from 'path';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Conexão com o MongoDB
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://blog-mongodb:27017/blog';
+mongoose.connect(MONGODB_URI)
+  .then(() => logger.info('Conectado ao MongoDB'))
+  .catch((error) => logger.error('Erro ao conectar ao MongoDB:', error));
+
+// Configuração do Swagger
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API do Blog dos Professores',
+      version: '1.0.0',
+      description: 'API para o blog dos professores',
+    },
+    servers: [
+      {
+        url: 'http://localhost:4000',
+        description: 'Servidor de desenvolvimento',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./src/routes/*.ts', './dist/routes/*.js', path.join(__dirname, './routes/*.js')],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rota raiz redireciona para a documentação
+app.get('/', (_req, res) => {
+  res.redirect('/api-docs');
+});
+
+// Rotas
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/seed', seedRoutes);
+app.use('/api/users', userRoutes);
+
+// Tratamento de erros
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error('Erro não tratado:', err);
+  res.status(500).json({ message: 'Erro interno do servidor' });
+});
+
+export default app; 

@@ -1,4 +1,23 @@
+version: '3.8'
+
 services:
+
+  # Serviço frontend (Next.js)
+  frontend:
+    container_name: blog-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    depends_on:
+      - api
+    networks:
+      - blog-network
+    restart: unless-stopped
 
   # Serviço api
   api:
@@ -7,13 +26,10 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "4000:3000"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/blog
       - NODE_ENV=development
-    volumes:
-      - ./api:/usr/src/app
-      - /usr/src/app/node_modules
     depends_on:
       - mongodb
     networks:
@@ -36,19 +52,6 @@ services:
       - blog-network
     restart: unless-stopped
 
-# Serviço frontend
-  frontend:
-    container_name: blog-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80" 
-    depends_on:
-      - api
-    networks:
-      - blog-network
-    restart: unless-stopped
 
 networks:
   blog-network:

@@ -1,35 +1,31 @@
-# Estágio de build
-FROM node:18-alpine as build
+# Build stage
+FROM node:20-alpine as builder
 
-# Definir diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de configuração e dependências
+# Copy package files
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm ci
+# Install dependencies
+RUN npm install
 
-# Copiar código-fonte
+# Copy source code
 COPY . .
 
-# Configurar variáveis de ambiente para build
-ENV VITE_API_URL=http://localhost:3000/api
-
-# Construir a aplicação
+# Build the application
 RUN npm run build
 
-# Estágio de produção
+# Production stage
 FROM nginx:alpine
 
-# Copiar configuração personalizada do nginx
+# Copy build files from builder stage
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copiar arquivos de build do estágio anterior
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Expor porta
+# Expose port 80
 EXPOSE 80
 
-# Comando para iniciar o nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"] 
