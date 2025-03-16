@@ -8,19 +8,20 @@ import {
   Box,
   CircularProgress,
   styled,
+  useTheme,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 
-const PostContent = styled('div')`
+const PostContent = styled('div')(({ theme }) => `
   margin-top: 24px;
-  color: rgba(0, 0, 0, 0.7);
+  color: ${theme.palette.mode === 'dark' ? theme.palette.text.primary : 'rgba(0, 0, 0, 0.7)'};
   line-height: 1.6;
 
   h3, h4 {
-    color: rgba(0, 0, 0, 0.87);
+    color: ${theme.palette.text.primary};
     margin-top: 24px;
     margin-bottom: 16px;
   }
@@ -41,13 +42,17 @@ const PostContent = styled('div')`
   blockquote {
     margin: 16px 0;
     padding: 8px 24px;
-    border-left: 4px solid #1976d2;
-    background-color: rgba(25, 118, 210, 0.05);
+    border-left: 4px solid ${theme.palette.primary.main};
+    background-color: ${theme.palette.mode === 'dark' 
+      ? 'rgba(144, 202, 249, 0.08)' 
+      : 'rgba(25, 118, 210, 0.05)'};
     font-style: italic;
   }
 
   pre {
-    background-color: #f5f5f5;
+    background-color: ${theme.palette.mode === 'dark' 
+      ? 'rgba(255, 255, 255, 0.05)' 
+      : '#f5f5f5'};
     padding: 16px;
     border-radius: 4px;
     overflow-x: auto;
@@ -57,6 +62,7 @@ const PostContent = styled('div')`
   code {
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
+    color: ${theme.palette.text.primary};
   }
 
   img {
@@ -66,13 +72,13 @@ const PostContent = styled('div')`
   }
 
   a {
-    color: #1976d2;
+    color: ${theme.palette.primary.main};
     text-decoration: none;
     &:hover {
       text-decoration: underline;
     }
   }
-`;
+`);
 
 interface Author {
   _id: string;

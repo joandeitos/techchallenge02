@@ -89,6 +89,8 @@ const AdminPanel: React.FC = () => {
   const [editedUserRole, setEditedUserRole] = useState<'admin' | 'professor' | 'aluno'>('professor');
   const [editedUserDiscipline, setEditedUserDiscipline] = useState('');
   const [openUserDialog, setOpenUserDialog] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'post' | 'user'; title?: string; name?: string } | null>(null);
   
   // Estados para ordenação e busca
   const [postOrder, setPostOrder] = useState<Order>('desc');
@@ -129,30 +131,41 @@ const AdminPanel: React.FC = () => {
     fetchUsers();
   }, [token]);
 
-  const handleDeletePost = async (postId: string) => {
+  const handleDeleteClick = (id: string, type: 'post' | 'user', title?: string, name?: string) => {
+    setItemToDelete({ id, type, title, name });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
     try {
-      await axios.delete(`/api/posts/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchPosts();
+      if (itemToDelete.type === 'post') {
+        await axios.delete(`/api/posts/${itemToDelete.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        fetchPosts();
+      } else {
+        await axios.delete(`/api/users/${itemToDelete.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        fetchUsers();
+      }
     } catch (error) {
-      console.error('Erro ao deletar post:', error);
+      console.error(`Erro ao deletar ${itemToDelete.type}:`, error);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    try {
-      await axios.delete(`/api/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      fetchUsers();
-    } catch (error) {
-      console.error('Erro ao deletar usuário:', error);
-    }
+  const handleCancelDelete = () => {
+    setDeleteConfirmOpen(false);
+    setItemToDelete(null);
   };
 
   const handleEditPost = (post: Post) => {
@@ -297,7 +310,7 @@ const AdminPanel: React.FC = () => {
   const sortedAndFilteredUsers = React.useMemo(() => filterAndSortUsers(users), [users, userOrder, userOrderBy, userSearch]);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Painel Administrativo
       </Typography>
@@ -369,7 +382,10 @@ const AdminPanel: React.FC = () => {
                       <IconButton onClick={() => handleEditPost(post)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton onClick={() => handleDeletePost(post._id)}>
+                      <IconButton
+                        onClick={() => handleDeleteClick(post._id, 'post', post.title)}
+                        color="error"
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
@@ -452,7 +468,10 @@ const AdminPanel: React.FC = () => {
                       <IconButton onClick={() => handleEditUser(user)}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton onClick={() => handleDeleteUser(user._id)}>
+                      <IconButton
+                        onClick={() => handleDeleteClick(user._id, 'user', undefined, user.name || user.email)}
+                        color="error"
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
@@ -540,6 +559,32 @@ const AdminPanel: React.FC = () => {
           <Button onClick={() => setOpenUserDialog(false)}>Cancelar</Button>
           <Button onClick={handleSaveUserEdit} variant="contained">
             Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCancelDelete}
+      >
+        <DialogTitle>
+          Confirmar Exclusão
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            {itemToDelete?.type === 'post' 
+              ? `Tem certeza que deseja excluir o post "${itemToDelete.title}"?`
+              : `Tem certeza que deseja excluir o usuário "${itemToDelete?.name}"?`
+            }
+          </Typography>
+          <Typography color="error" sx={{ mt: 2 }}>
+            Esta ação não pode ser desfeita.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancelar</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Excluir
           </Button>
         </DialogActions>
       </Dialog>

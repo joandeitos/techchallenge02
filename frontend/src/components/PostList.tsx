@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import {
   Container,
   Typography,
@@ -16,6 +15,7 @@ import {
   IconButton,
   Tooltip,
   Divider,
+  styled,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -23,44 +23,58 @@ import SortIcon from '@mui/icons-material/Sort';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 
-const StyledCard = styled(Card)`
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  width: 100%;
-  margin-bottom: 16px;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  }
-`;
+const StyledCard = styled(Card)(({ theme }) => ({
+  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  width: '100%',
+  marginBottom: '16px',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  },
+}));
 
-const StyledCardContent = styled(CardContent)`
-  flex-grow: 1;
-`;
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+});
 
-const PostContent = styled.div`
-  margin-top: 16px;
-  color: rgba(0, 0, 0, 0.7);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  line-height: 1.5;
+const PostContent = styled('div')(({ theme }) => ({
+  marginTop: '16px',
+  color: theme.palette.mode === 'dark' ? theme.palette.text.primary : 'rgba(0, 0, 0, 0.7)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: 'vertical',
+  lineHeight: 1.5,
 
-  img {
-    max-width: 100%;
-    height: auto;
-  }
+  '& img': {
+    maxWidth: '100%',
+    height: 'auto',
+  },
 
-  a {
-    color: ${props => props.theme.palette?.primary?.main || '#1976d2'};
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
+  '& a': {
+    color: theme.palette.primary.main,
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+
+  '& pre': {
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? 'rgba(255, 255, 255, 0.05)' 
+      : '#f5f5f5',
+    padding: '8px',
+    borderRadius: '4px',
+    overflowX: 'auto',
+  },
+
+  '& code': {
+    fontFamily: "'Consolas', 'Monaco', monospace",
+    fontSize: '0.9em',
+    color: theme.palette.text.primary,
+  },
+}));
 
 interface Author {
   _id: string;

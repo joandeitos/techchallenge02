@@ -1,87 +1,88 @@
 # Dependencies
-node_modules/
-/.pnp
-.pnp.js
+**/node_modules/
+**/.pnp
+**/.pnp.js
 
 # Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+**/.env
+**/.env.*
+!**/.env.example
 
 # Build outputs
-/dist
-/build
-/out
+**/dist/
+**/build/
+**/out/
 
 # TypeScript
-*.tsbuildinfo
-next-env.d.ts
+**/*.tsbuildinfo
+**/next-env.d.ts
 
 # Testing
-/coverage
+**/coverage/
+**/.nyc_output/
 
 # Development tools
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
+**/.idea/
+**/.vscode/*
+!**/.vscode/extensions.json
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+**/*.swp
+**/*.swo
 
 # Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-debug.log
-logs/
-*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/debug.log
+**/logs/
+**/*.log
 
 # MongoDB
-data/
-dump/
-mongod.log
-*.mongodb
+**/data/
+**/dump/
+**/mongod.log
+**/*.mongodb
 
 # Docker
-.docker/
-docker-compose.override.yml
+**/.docker/
+**/docker-compose.override.yml
 
 # Cache directories
-.cache/
-.npm/
-.eslintcache
-.stylelintcache
+**/.cache/
+**/.npm/
+**/.eslintcache
+**/.stylelintcache
 
 # Bundle analysis
-stats.html
-bundle-stats.json
+**/stats.html
+**/bundle-stats.json
 
 # System files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+**/.DS_Store
+**/.DS_Store?
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
 
 # IDE specific files
-.vscode/
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+**/*.suo
+**/*.ntvs*
+**/*.njsproj
+**/*.sln
+**/*.sw?
 
 # Temporary files
-*.tmp
-*.temp
-.temp/
-.tmp/
+**/*.tmp
+**/*.temp
+**/.temp/
+**/.tmp/
+
+# Project specific
+**/uploads/
+**/public/uploads/
+**/.env.production
+**/.env.staging
