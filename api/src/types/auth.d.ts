@@ -1,6 +1,10 @@
 export interface AuthUser {
+  _id: string;
   id: string;
-  role: 'admin' | 'professor';
+  name: string;
+  email: string;
+  role: string;
+  discipline?: string;
 }
 
 declare global {

@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import { User } from '../types/user';
 
 interface ProfileData {
   name: string;
@@ -19,14 +20,6 @@ interface ProfileData {
   currentPassword?: string;
   newPassword?: string;
   confirmPassword?: string;
-}
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  discipline?: string;
 }
 
 export default function Profile() {
@@ -57,8 +50,12 @@ export default function Profile() {
     try {
       const updateData: Partial<ProfileData> = {
         name: formData.name,
-        email: formData.email,
       };
+
+      // Apenas admin pode atualizar o e-mail
+      if (user?.role === 'admin') {
+        updateData.email = formData.email;
+      }
 
       if (user?.role === 'professor') {
         updateData.discipline = formData.discipline;
@@ -74,7 +71,10 @@ export default function Profile() {
         updateData.newPassword = formData.newPassword;
       }
 
-      const response = await axios.put<User>(`/api/users/${user?._id}`, updateData);
+      const response = await axios.put<User>(
+        `/api/users/profile/${user?.id}`,
+        updateData
+      );
       updateUser(response.data);
       setSuccess('Perfil atualizado com sucesso!');
       
@@ -85,8 +85,17 @@ export default function Profile() {
         newPassword: '',
         confirmPassword: '',
       }));
-    } catch (error) {
-      setError('Erro ao atualizar o perfil. Por favor, tente novamente.');
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', {
+        error,
+        requestData: formData,
+        userId: user?.id
+      });
+      if (error?.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('Erro ao atualizar o perfil. Por favor, tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -133,6 +142,8 @@ export default function Profile() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={user?.role !== 'admin'}
+                  helperText={user?.role !== 'admin' ? 'Apenas administradores podem alterar o e-mail' : ''}
                 />
               </Grid>
 

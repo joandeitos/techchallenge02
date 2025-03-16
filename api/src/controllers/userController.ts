@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
 import logger from '../config/logger';
+import bcrypt from 'bcryptjs';
 
 // Listar todos os usuários
 export const listUsers = async (_: Request, res: Response): Promise<void> => {
@@ -75,5 +76,72 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     logger.error('Erro ao deletar usuário:', error);
     res.status(500).json({ message: 'Erro ao deletar usuário' });
+  }
+};
+
+// Atualizar o próprio perfil
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Verifica se o usuário está tentando atualizar seu próprio perfil
+    if (req.user?.id !== req.params.id) {
+      logger.warn('Tentativa de atualização de perfil não autorizada', {
+        requestUserId: req.user?.id,
+        targetUserId: req.params.id,
+        requestBody: req.body
+      });
+      res.status(403).json({ message: 'Você só pode atualizar seu próprio perfil' });
+      return;
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      logger.warn('Usuário não encontrado para atualização');
+      res.status(404).json({ message: 'Usuário não encontrado' });
+      return;
+    }
+
+    // Remove campos que não podem ser atualizados pelo usuário
+    const updateData: any = {
+      name: req.body.name
+    };
+
+    if (req.user.role === 'admin') {
+      updateData.email = req.body.email;
+    }
+
+    if (req.user.role === 'professor') {
+      updateData.discipline = req.body.discipline;
+    }
+
+    // Se estiver alterando a senha
+    if (req.body.currentPassword && req.body.newPassword) {
+      const isValidPassword = await bcrypt.compare(req.body.currentPassword, user.password);
+      if (!isValidPassword) {
+        res.status(401).json({ message: 'Senha atual incorreta' });
+        return;
+      }
+
+      // Hash da nova senha
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(req.body.newPassword, salt);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    logger.info('Perfil atualizado com sucesso');
+    res.json(updatedUser);
+  } catch (error) {
+    logger.error('Erro ao atualizar perfil:', error);
+    console.error('Detalhes do erro:', {
+      error,
+      userId: req.params.id,
+      requestBody: req.body,
+      user: req.user
+    });
+    res.status(500).json({ message: 'Erro ao atualizar perfil' });
   }
 }; 

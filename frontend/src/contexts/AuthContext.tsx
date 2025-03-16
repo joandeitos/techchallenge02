@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  discipline?: string;
-}
+import { User } from '../types/user';
 
 interface AuthResponse {
   token: string;

@@ -1,25 +1,35 @@
-import React from 'react';
-import PostList from '../components/PostList';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box } from '@mui/material';
+import PostList from '../components/PostList';
+import axios from 'axios';
+import { Post } from '../types/post';
 
 export default function Home() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get<Post[]>('/api/posts');
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ my: 4 }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          align="center"
-          gutterBottom
-          sx={{
-            fontWeight: 'bold',
-            color: 'primary.main',
-            mb: 4
-          }}
-        >
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom align="center">
           Blog dos Professores
         </Typography>
-        <PostList />
+        <PostList posts={posts} onPostDeleted={fetchPosts} />
       </Box>
     </Container>
   );

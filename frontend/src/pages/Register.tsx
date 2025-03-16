@@ -8,8 +8,10 @@ import {
   Button,
   Alert,
   Paper,
+  IconButton,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ export default function Register() {
 
     try {
       await register(formData);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError('Erro ao registrar usuário. Verifique seus dados e tente novamente.');
     } finally {
@@ -40,7 +42,15 @@ export default function Register() {
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <IconButton 
+        onClick={() => navigate(-1)} 
+        sx={{ mb: 2 }}
+        aria-label="voltar"
+      >
+        <ArrowBackIcon />
+      </IconButton>
+
       <Box sx={{ mt: 8, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography component="h1" variant="h4" align="center" gutterBottom>

@@ -5,8 +5,12 @@ import logger from '../config/logger';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface JwtPayload {
+  _id: string;
   id: string;
+  name: string;
+  email: string;
   role: 'admin' | 'professor';
+  discipline?: string;
 }
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {

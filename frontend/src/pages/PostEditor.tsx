@@ -8,11 +8,19 @@ import {
   Button,
   Paper,
   Alert,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 
 interface Post {
-  _id?: string;
+  id?: string;
   title: string;
   content: string;
 }
@@ -26,6 +34,7 @@ export default function PostEditor() {
   });
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const isEditing = Boolean(id);
 
   useEffect(() => {
@@ -58,12 +67,31 @@ export default function PostEditor() {
       } else {
         await axios.post('/api/posts', post);
       }
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       console.error('Erro ao salvar post:', error);
       setError('Erro ao salvar o post. Por favor, tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      await axios.delete(`/api/posts/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao deletar post:', error);
+      setError('Erro ao deletar o post. Por favor, tente novamente.');
+    } finally {
+      setLoading(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -86,11 +114,30 @@ export default function PostEditor() {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <IconButton 
+        onClick={() => navigate(-1)} 
+        sx={{ mb: 2 }}
+        aria-label="voltar"
+      >
+        <ArrowBackIcon />
+      </IconButton>
+
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {isEditing ? 'Editar Post' : 'Novo Post'}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1">
+            {isEditing ? 'Editar Post' : 'Novo Post'}
+          </Typography>
+          {isEditing && (
+            <IconButton
+              onClick={() => setDeleteDialogOpen(true)}
+              color="error"
+              aria-label="deletar post"
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -118,8 +165,9 @@ export default function PostEditor() {
               onChange={handleChange}
               required
               multiline
-              rows={8}
+              rows={15}
               sx={{ mb: 3 }}
+              helperText="Você pode usar tags HTML para formatar o conteúdo (ex: <h3>, <p>, <strong>, <ul>, <li>, <blockquote>, <pre>, <code>)"
             />
 
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -134,7 +182,8 @@ export default function PostEditor() {
 
               <Button
                 variant="outlined"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
+                sx={{ mr: 1 }}
                 disabled={loading}
               >
                 Cancelar
@@ -143,6 +192,24 @@ export default function PostEditor() {
           </Box>
         </Paper>
       </Box>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            {loading ? 'Excluindo...' : 'Excluir'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 } 

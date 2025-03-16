@@ -139,7 +139,10 @@ const router: Router = express.Router();
  *         description: Erro interno do servidor
  */
 
-// Todas as rotas de usuários requerem autenticação e permissão de admin
+// Rota para atualização do próprio perfil (requer apenas autenticação)
+router.put('/profile/:id', authMiddleware, userController.updateProfile);
+
+// Todas as outras rotas de usuários requerem autenticação e permissão de admin
 router.use(authMiddleware, adminMiddleware);
 
 router.get('/', userController.listUsers);

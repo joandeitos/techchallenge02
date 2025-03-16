@@ -5,13 +5,11 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid,
   IconButton,
   Box,
   useTheme,
   useMediaQuery,
   Tooltip,
-  Divider,
   styled,
   TextField,
   List,
@@ -30,11 +28,12 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
-import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import { Post } from '../types/post';
+import { User } from '../types/user';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
@@ -98,20 +97,6 @@ const ActionButtons = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
 }));
 
-interface Author {
-  _id: string;
-  name: string;
-  email: string;
-}
-
-interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  author: Author;
-  createdAt: string;
-}
-
 type SortOrder = 'desc' | 'asc';
 
 interface PostListProps {
@@ -163,7 +148,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
   const canManagePost = (post: Post) => {
     if (!user) return false;
     if (user.role === 'admin') return true;
-    if (user.role === 'professor' && post.author._id === user._id) return true;
+    if (user.role === 'professor' && post.author.id === user.id) return true;
     return false;
   };
 
@@ -180,7 +165,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
 
   const handleEditClick = () => {
     if (selectedPost) {
-      navigate(`/post/${selectedPost._id}/edit`);
+      navigate(`/post/${selectedPost.id}/edit`);
     }
     handleMenuClose();
   };
@@ -193,7 +178,13 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
   const handleDeleteConfirm = async () => {
     if (selectedPost) {
       try {
-        await axios.delete(`/api/posts/${selectedPost._id}`);
+        const token = localStorage.getItem('token');
+        await axios.delete(`/api/posts/${selectedPost.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPosts(postsState.filter(post => post.id !== selectedPost.id));
         setDeleteDialogOpen(false);
         if (onPostDeleted) {
           onPostDeleted();
@@ -282,7 +273,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
           <List>
             {postsState.map((post) => (
               <Paper
-                key={post._id}
+                key={post.id}
                 elevation={2}
                 sx={{ mb: 2, p: 2, '&:hover': { bgcolor: 'action.hover' } }}
               >
@@ -307,7 +298,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
                       variant="h6"
                       component="div"
                       sx={{ cursor: 'pointer', flexGrow: 1 }}
-                      onClick={() => navigate(`/post/${post._id}`)}
+                      onClick={() => navigate(`/post/${post.id}`)}
                     >
                       {post.title}
                     </Typography>
@@ -333,7 +324,7 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
                           WebkitBoxOrient: 'vertical',
                           cursor: 'pointer',
                         }}
-                        onClick={() => navigate(`/post/${post._id}`)}
+                        onClick={() => navigate(`/post/${post.id}`)}
                         dangerouslySetInnerHTML={createMarkup(post.content)}
                       />
                     }

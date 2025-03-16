@@ -37,9 +37,9 @@ export default function Login() {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard');
-    } catch (error) {
-      setError('Falha no login. Por favor, verifique suas credenciais.');
+      navigate('/');
+    } catch (err) {
+      setError('Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setLoading(false);
     }
