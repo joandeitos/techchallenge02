@@ -14,6 +14,10 @@ import {
   Divider,
   styled,
   TextField,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -21,6 +25,7 @@ import SortIcon from '@mui/icons-material/Sort';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
@@ -107,6 +112,7 @@ const PostList: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user } = useAuth();
 
   const fetchPosts = async (query?: string) => {
     try {
@@ -137,13 +143,20 @@ const PostList: React.FC = () => {
     fetchPosts();
   }, []);
 
-  const handleEdit = (postId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    navigate(`/posts/edit/${postId}`);
+  const canEditPost = (post: Post) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (user.role === 'professor' && post.author._id === user._id) return true;
+    return false;
   };
 
-  const handleViewPost = (postId: string) => {
-    navigate(`/post/${postId}`);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,88 +218,75 @@ const PostList: React.FC = () => {
           Nenhum post encontrado.
         </Typography>
       ) : (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            {posts.map((post) => (
-              <StyledCard 
-                key={post._id} 
-                onClick={() => handleViewPost(post._id)}
-                sx={{ 
-                  position: 'relative',
-                  cursor: 'pointer',
+        <List>
+          {posts.map((post) => (
+            <Paper
+              key={post._id}
+              elevation={2}
+              sx={{ mb: 2, p: 2, '&:hover': { bgcolor: 'action.hover' } }}
+            >
+              <ListItem
+                disablePadding
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
                 }}
               >
-                <StyledCardContent>
-                  <Box>
-                    <Typography 
-                      variant={isMobile ? "h6" : "h5"} 
-                      component="h2" 
-                      gutterBottom
-                      sx={{
-                        pr: 15, // Espaço para os botões
-                        transition: 'color 0.2s ease-in-out',
-                        '&:hover': {
-                          color: theme.palette.primary.main
-                        }
-                      }}
-                    >
-                      {post.title}
-                    </Typography>
-                  </Box>
-                  <Typography 
-                    sx={{ mb: 2 }} 
-                    color="text.secondary" 
-                    variant={isMobile ? "body2" : "body1"}
+                <Box
+                  sx={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 1,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/post/${post._id}`)}
                   >
-                    Por {post.author.name || post.author.email} em{' '}
-                    {new Date(post.createdAt).toLocaleDateString('pt-BR')}
+                    {post.title}
                   </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <PostContent
-                    dangerouslySetInnerHTML={createMarkup(
-                      post.content.length > 500
-                        ? post.content.substring(0, 500) + '...'
-                        : post.content
-                    )}
-                  />
-                  <ActionButtons>
-                    <Tooltip title="Ler mais">
-                      <IconButton 
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewPost(post._id);
-                        }}
-                        sx={{
-                          color: theme.palette.primary.main,
-                          '&:hover': {
-                            backgroundColor: theme.palette.primary.main + '20',
-                          }
-                        }}
-                      >
-                        <ReadMoreIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Editar">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => handleEdit(post._id, e)}
-                        sx={{
-                          color: theme.palette.secondary.main,
-                          '&:hover': {
-                            backgroundColor: theme.palette.secondary.main + '20',
-                          }
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </ActionButtons>
-                </StyledCardContent>
-              </StyledCard>
-            ))}
-          </Grid>
-        </Grid>
+                  {canEditPost(post) && (
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={() => navigate(`/post/${post._id}/edit`)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => navigate(`/post/${post._id}`)}
+                    >
+                      {post.content}
+                    </Typography>
+                  }
+                  secondary={
+                    <Typography variant="body2" color="text.secondary">
+                      Por {post.author.name} em {formatDate(post.createdAt)}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            </Paper>
+          ))}
+        </List>
       )}
     </Container>
   );
