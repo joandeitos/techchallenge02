@@ -18,11 +18,20 @@ import {
   ListItem,
   ListItemText,
   Paper,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DOMPurify from 'dompurify';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -105,14 +114,22 @@ interface Post {
 
 type SortOrder = 'desc' | 'asc';
 
-const PostList: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+interface PostListProps {
+  posts: Post[];
+  onPostDeleted?: () => void;
+}
+
+const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
+  const [postsState, setPosts] = useState<Post[]>(posts);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const fetchPosts = async (query?: string) => {
     try {
@@ -136,18 +153,61 @@ const PostList: React.FC = () => {
   const handleToggleSort = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newOrder);
-    setPosts(sortPosts(posts, newOrder));
+    setPosts(sortPosts(postsState, newOrder));
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const canEditPost = (post: Post) => {
+  const canManagePost = (post: Post) => {
     if (!user) return false;
     if (user.role === 'admin') return true;
     if (user.role === 'professor' && post.author._id === user._id) return true;
     return false;
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, post: Post) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setSelectedPost(post);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedPost(null);
+  };
+
+  const handleEditClick = () => {
+    if (selectedPost) {
+      navigate(`/post/${selectedPost._id}/edit`);
+    }
+    handleMenuClose();
+  };
+
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+    setAnchorEl(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedPost) {
+      try {
+        await axios.delete(`/api/posts/${selectedPost._id}`);
+        setDeleteDialogOpen(false);
+        if (onPostDeleted) {
+          onPostDeleted();
+        }
+      } catch (error) {
+        console.error('Erro ao deletar post:', error);
+      }
+    }
+    setSelectedPost(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setSelectedPost(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -213,80 +273,110 @@ const PostList: React.FC = () => {
         </Tooltip>
       </Box>
 
-      {posts.length === 0 ? (
+      {postsState.length === 0 ? (
         <Typography variant="h6" align="center" sx={{ mt: 4 }}>
           Nenhum post encontrado.
         </Typography>
       ) : (
-        <List>
-          {posts.map((post) => (
-            <Paper
-              key={post._id}
-              elevation={2}
-              sx={{ mb: 2, p: 2, '&:hover': { bgcolor: 'action.hover' } }}
-            >
-              <ListItem
-                disablePadding
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                }}
+        <>
+          <List>
+            {postsState.map((post) => (
+              <Paper
+                key={post._id}
+                elevation={2}
+                sx={{ mb: 2, p: 2, '&:hover': { bgcolor: 'action.hover' } }}
               >
-                <Box
+                <ListItem
+                  disablePadding
                   sx={{
-                    width: '100%',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 1,
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    component="div"
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/post/${post._id}`)}
+                  <Box
+                    sx={{
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 1,
+                    }}
                   >
-                    {post.title}
-                  </Typography>
-                  {canEditPost(post) && (
-                    <IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => navigate(`/post/${post._id}/edit`)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  )}
-                </Box>
-                <ListItemText
-                  primary={
                     <Typography
-                      variant="body1"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        cursor: 'pointer',
-                      }}
+                      variant="h6"
+                      component="div"
+                      sx={{ cursor: 'pointer', flexGrow: 1 }}
                       onClick={() => navigate(`/post/${post._id}`)}
                     >
-                      {post.content}
+                      {post.title}
                     </Typography>
-                  }
-                  secondary={
-                    <Typography variant="body2" color="text.secondary">
-                      Por {post.author.name} em {formatDate(post.createdAt)}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            </Paper>
-          ))}
-        </List>
+                    {canManagePost(post) && (
+                      <IconButton
+                        edge="end"
+                        aria-label="mais opções"
+                        onClick={(e) => handleMenuClick(e, post)}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => navigate(`/post/${post._id}`)}
+                        dangerouslySetInnerHTML={createMarkup(post.content)}
+                      />
+                    }
+                    secondary={
+                      <Typography variant="body2" color="text.secondary">
+                        Por {post.author.name} em {formatDate(post.createdAt)}
+                      </Typography>
+                    }
+                  />
+                </ListItem>
+              </Paper>
+            ))}
+          </List>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={handleEditClick}>Editar</MenuItem>
+            <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+              Excluir
+            </MenuItem>
+          </Menu>
+
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={handleDeleteCancel}
+          >
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDeleteCancel}>Cancelar</Button>
+              <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+                Excluir
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
     </Container>
   );

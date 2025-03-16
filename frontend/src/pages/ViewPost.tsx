@@ -12,6 +12,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 interface Post {
   _id: string;
@@ -63,6 +64,10 @@ export default function ViewPost() {
     });
   };
 
+  const createMarkup = (content: string) => {
+    return { __html: DOMPurify.sanitize(content) };
+  };
+
   if (loading) {
     return (
       <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
@@ -109,9 +114,11 @@ export default function ViewPost() {
           Por {post.author.name} em {formatDate(post.createdAt)}
         </Typography>
 
-        <Typography variant="body1" sx={{ mt: 3, whiteSpace: 'pre-wrap' }}>
-          {post.content}
-        </Typography>
+        <Typography 
+          variant="body1" 
+          sx={{ mt: 3 }}
+          dangerouslySetInnerHTML={createMarkup(post.content)}
+        />
       </Paper>
     </Container>
   );
