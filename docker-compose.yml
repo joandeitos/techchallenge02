@@ -10,9 +10,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
     depends_on:
       - api
     networks:
