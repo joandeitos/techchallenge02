@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
 
-  # Serviço frontend (Next.js)
+  # Serviço frontend 
   frontend:
     container_name: blog-frontend
     build:
