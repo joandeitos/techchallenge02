@@ -142,6 +142,9 @@ http://localhost:8080/api-docs
 - PUT /api/users/:id
 - DELETE /api/users/:id
 
+## Relato de Experiências e Desafios
+A equipe enfrentou desafios na configuração do ambiente de desenvolvimento e integração de microsserviços, além de implementar autenticação segura e testes automatizados, superando-os com colaboração e aprendizado contínuo.
+
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
