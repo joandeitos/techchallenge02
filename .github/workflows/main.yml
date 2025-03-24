@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - fase_03 #main
+      - main
   pull_request:
     branches:
-      - fase_03 #main
+      - main
 
 jobs:
   build:
@@ -35,19 +35,14 @@ jobs:
         npm install
         npm test
     
-    # Instalar dependências do frontend (se necessário)
-    #- name: Instalar dependências do frontend
-    #  run: |
-    #    cd blog-frontend  # Entrar no diretório 'blog-frontend' se necessário
-    #    npm install
-    # Construir as imagens Docker
-    - name: Construir as imagens Docker
+    # Instalar dependências do frontend 
+    - name: Instalar dependências do frontend
       run: |
-        docker-compose -f docker-compose.yml build
-    # Deploy no Docker Hub
-    - name: Deploy no Docker Hub
+       cd frontend  
+       npm install
+    # Construir e empurrar as imagens Docker
+    - name: Construir e empurrar as imagens Docker
       run: |
-        cd api
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-api:latest .
-        docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
+        docker-compose -f docker-compose.yml build
+        docker-compose -f docker-compose.yml push
