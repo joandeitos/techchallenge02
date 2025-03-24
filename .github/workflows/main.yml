@@ -9,41 +9,40 @@ on:
       - '**' 
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1Checkout do código
-      - name: Checkout do código
-        uses: actions/checkout@v3
+    - name: Checar o código do repositório
+      uses: actions/checkout@v3
 
-      # Configuração do Docker
-      - name: Verificar versão do Docker Compose
-        run: docker-compose --version
+    # Instalar Docker e Docker Compose
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
 
-      # Construção e inicialização dos containers
-      - name: Construir e iniciar os containers
-        run: docker-compose up -d --build
-
-      # Esperar a API estar disponível
-      - name: Aguardar API subir
-        run: |
-          echo "Aguardando API subir..."
-          sleep 10 # Aguarda 10 segundos para garantir que a API subiu
-          curl --retry 5 --retry-delay 5 --retry-connrefused http://localhost:8080 || exit 1
-
-      # Rodar testes na API
-      - name: Executar testes no backend
-        run: docker exec blog-api npm test
-
-      # Deploy no Docker Hub
-      - name: Deploy no Docker Hub
-        run: |
-          cd api
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-api:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
-          
-      # Parar e remover containers
-      - name: Derrubar os containers
-        run: docker-compose down
+    - name: Instalar Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl
+        curl -L https://github.com/docker/compose/releases/download/v2.17.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version  # Verifica se o docker-compose foi instalado corretamente
+    
+    # Instalar dependências do backend
+    - name: Instalar dependências do backend e testar
+      run: |
+        cd api  # Entrar no diretório 'api' se o package.json está lá
+        npm install
+        npm test
+    
+    # Construir as imagens Docker
+    - name: Construir as imagens Docker
+      run: |
+        docker-compose -f docker-compose.yml build
+    # Deploy no Docker Hub
+    - name: Deploy no Docker Hub
+      run: |
+        cd api
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-api:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
