@@ -111,52 +111,17 @@ cp .env.example .env
 
 3. Inicie os containers:
 ```bash
-docker compose up -d
+docker compose up
 ```
 
 4. Acesse a aplicação:
-- Frontend: http://localhost:3000
-- API: http://localhost:4000
-- Documentação API: http://localhost:4000/api-docs
-
-### Desenvolvimento
-
-1. Instale as dependências:
-```bash
-# Frontend
-cd frontend
-npm install
-
-# Backend
-cd api
-npm install
-```
-
-2. Execute em modo desenvolvimento:
-```bash
-# Frontend
-npm start
-
-# Backend
-npm run dev
-```
-
-## 🧪 Testes
-
-```bash
-# Frontend
-cd frontend
-npm test
-
-# Backend
-cd api
-npm test
-```
+- Blog dos professores: http://localhost:8080
+- Documentação API: http://localhost:8080/api-docs
 
 ## 📚 Documentação API
 
 A documentação da API está disponível em Swagger:
-http://localhost:4000/api-docs
+http://localhost:8080/api-docs
 
 ### Principais Endpoints
 
