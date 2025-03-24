@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - fase_03 #main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,3 +45,14 @@ jobs:
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker-compose -f docker-compose.yml build
         docker-compose -f docker-compose.yml push
+
+    # Iniciar serviços Docker para testes
+    - name: Iniciar serviços Docker
+      run: |
+        docker-compose -f docker-compose.yml up -d
+
+    # Verificar estado do MongoDB
+    - name: Verificar estado do MongoDB
+      run: |
+        docker ps -a
+        docker logs blog-mongodb
