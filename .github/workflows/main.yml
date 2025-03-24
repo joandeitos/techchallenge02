@@ -3,10 +3,11 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - fase_03 #main
+      - main
   pull_request:
     branches:
-      - fase_03 #main
+      - main
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,25 +35,13 @@ jobs:
         npm install
         npm test
     
-    # Instalar dependências do frontend 
-    - name: Instalar dependências do frontend
+    - name: Construir as imagens Docker
       run: |
-       cd frontend  
-       npm install
-    # Construir e empurrar as imagens Docker
-    - name: Construir e empurrar as imagens Docker
-      run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker-compose -f docker-compose.yml build
-        docker-compose -f docker-compose.yml push
-
-    # Iniciar serviços Docker para testes
-    - name: Iniciar serviços Docker
+    # Deploy no Docker Hub
+    - name: Deploy no Docker Hub
       run: |
-        docker-compose -f docker-compose.yml up -d
-
-    # Verificar estado do MongoDB
-    - name: Verificar estado do MongoDB
-      run: |
-        docker ps -a
-        docker logs blog-mongodb
+        cd api
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/blog-api:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/blog-api:latest
