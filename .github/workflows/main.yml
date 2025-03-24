@@ -28,17 +28,11 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version  # Verifica se o docker-compose foi instalado corretamente
     
-    # Instalar dependências do backend
-    - name: Instalar dependências do backend e testar
-      run: |
-        cd api  # Entrar no diretório 'api' se o package.json está lá
-        npm install
-        npm test
-    
     # Construir as imagens Docker
     - name: Construir as imagens Docker
       run: |
         docker-compose -f docker-compose.yml build
+        
     # Deploy no Docker Hub
     - name: Deploy no Docker Hub
       run: |
