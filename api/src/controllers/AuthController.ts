@@ -23,7 +23,14 @@ export const AuthController = {
       }
 
       const token = jwt.sign(
-        { id: user._id, role: user.role },
+        {
+          _id: user._id,
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          discipline: user.discipline
+        },
         JWT_SECRET,
         { expiresIn: '1d' }
       );
@@ -63,7 +70,14 @@ export const AuthController = {
       });
 
       const token = jwt.sign(
-        { id: user._id, role: user.role },
+        {
+          _id: user._id,
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          discipline: user.discipline
+        },
         JWT_SECRET,
         { expiresIn: '1d' }
       );

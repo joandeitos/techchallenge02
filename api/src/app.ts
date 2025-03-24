@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import logger from './config/logger';
+import connectDB from './config/database';
 import postRoutes from './routes/posts';
 import authRoutes from './routes/auth';
 import seedRoutes from './routes/seed';
@@ -20,10 +21,9 @@ app.use(cors());
 app.use(express.json());
 
 // Conexão com o MongoDB
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://blog-mongodb:27017/blog';
-mongoose.connect(MONGODB_URI)
-  .then(() => logger.info('Conectado ao MongoDB'))
-  .catch((error) => logger.error('Erro ao conectar ao MongoDB:', error));
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 // Configuração do Swagger
 const swaggerOptions = {
