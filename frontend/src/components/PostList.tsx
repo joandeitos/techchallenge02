@@ -313,6 +313,16 @@ const PostList: React.FC<PostListProps> = ({ posts, onPostDeleted }) => {
                     )}
                   </Box>
                   <ListItemText
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      cursor: 'pointer',
+                      maxWidth: '100%',
+                      wordBreak: 'break-word'
+                    }}
                     primary={
                       <Typography
                         variant="body1"
