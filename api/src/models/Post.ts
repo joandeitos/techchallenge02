@@ -49,13 +49,13 @@ const postSchema = new Schema<IPost>({
     type: String,
     required: [true, 'Título é obrigatório'],
     trim: true,
-    minlength: [3, 'Título deve ter no mínimo 3 caracteres'],
+    minlength: [1, 'Título deve ter no mínimo 1 caracter'],
     maxlength: [100, 'Título deve ter no máximo 100 caracteres']
   },
   content: {
     type: String,
     required: [true, 'Conteúdo é obrigatório'],
-    minlength: [10, 'Conteúdo deve ter no mínimo 10 caracteres']
+    minlength: [1, 'Conteúdo deve ter no mínimo 1 caracter']
   },
   author: {
     type: Schema.Types.ObjectId,
