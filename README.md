@@ -35,13 +35,13 @@ git clone https://github.com/joandeitos/techchallenge02
 docker-compose up --build
 ```
 
-A API estará disponível em `http://localhost:3000`
+A API estará disponível em `http://localhost:4000`
 
 
 ## 🔄 Dados Iniciais
 Para carregar dados de teste, use o endpoint de seed:
 ```bash
-curl -X POST http://localhost:3000/api/seed
+curl -X POST http://localhost:4000/api/seed
 ```
 
 Isso criará:
@@ -49,7 +49,7 @@ Isso criará:
 - 12 posts distribuídos entre os professores
 
 ### Swagger
-A documentação interativa da API (Swagger) estará disponível em: http://localhost:3000/api-docs
+A documentação interativa da API (Swagger) estará disponível em: http://localhost:4000/api-docs
 
 ### Automação com GitHub Actions:
 
