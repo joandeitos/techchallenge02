@@ -114,10 +114,11 @@ docker compose up
 - Blog dos professores: http://localhost:8080
 - Documentação API: http://localhost:8080/api-docs
 
-## 📚 Documentação API
-
-A documentação da API está disponível em Swagger:
-http://localhost:8080/api-docs
+## 🔄 Dados Iniciais
+Para carregar dados de teste, use o endpoint de seed:
+```bash
+curl -X POST http://localhost:4000/api/seed
+```
 
 ### Principais Endpoints
 
