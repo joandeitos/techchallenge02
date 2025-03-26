@@ -3,10 +3,6 @@
 ## 📝 Descrição
 Sistema de blog desenvolvido como parte do Tech Challenge da FIAP, focado em criar uma plataforma moderna e responsiva para publicação e gerenciamento de conteúdo. O projeto utiliza uma arquitetura em microsserviços, com frontend em React/TypeScript e backend em Node.js/TypeScript.
 
-## 📹 Vídeo de Apresentação
-⏳ Status: Pendente
-> O vídeo de apresentação do projeto será disponibilizado em breve, demonstrando todas as funcionalidades implementadas e a arquitetura do sistema.
-
 ## 🚀 Funcionalidades
 
 ### 👥 Gestão de Usuários
